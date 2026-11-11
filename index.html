@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapped Scarcity — Resource Deprivation in AFA</title>
+<style>
+  :root{
+    --green:#1F5C3A;
+    --green-dark:#143D26;
+    --blue:#BFE3F2;
+    --blue-soft:#E8F4FA;
+    --ink:#1B2A24;
+    --muted:#5B6B63;
+    --line:#D3E3DA;
+    --white:#FFFFFF;
+    --yellow:#F6D979;
+    --coral:#E88773;
+    --sky:#8CCCE3;
+    --sage:#A8C7A0;
+    --radius:14px;
+    --shadow:0 6px 22px rgba(20,61,38,.10);
+  }
+
+
+  *{box-sizing:border-box;}
+
+
+  html{scroll-behavior:smooth;font-size:19px;}
+
+
+  body{
+    margin:0;
+    font-family:"Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:var(--white);
+    line-height:1.7;
+    font-weight:500;
+  }
+
+
+  h1,h2,h3{line-height:1.25;margin:0 0 .5em;}
+  p{margin:0 0 1em;}
+  a{color:var(--green);}
+
+
+  /* ---------- HEADER / NAV ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:var(--green);
+    box-shadow:var(--shadow);
+  }
+  .nav-wrap{
+    max-width:1180px;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:1rem;padding:.7rem 1.25rem;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:.65rem;text-decoration:none;}
+  .brand-grid{
+    display:grid;grid-template-columns:repeat(3,9px);
+    grid-template-rows:repeat(3,9px);gap:2px;flex:none;
+  }
+  .brand-grid span{background:var(--blue);border-radius:2px;}
+  .brand-grid span.on{background:var(--blue);}
+  .brand-grid span.off{background:rgba(255,255,255,.22);}
+  .brand-name{
+    color:var(--white);font-weight:700;letter-spacing:.06em;
+    font-size:1rem;text-transform:uppercase;
+  }
+  nav ul{
+    list-style:none;display:flex;gap:.25rem;
+    margin:0;padding:0;flex-wrap:wrap;
+  }
+  nav a{
+    display:block;color:var(--blue);text-decoration:none;
+    padding:.45rem .8rem;border-radius:999px;font-size:.92rem;
+    transition:background .2s,color .2s;
+  }
+  nav a:hover,nav a:focus{background:rgba(191,227,242,.18);color:var(--white);}
+
+
+  /* ---------- HERO ---------- */
+  .hero{
+    background:linear-gradient(160deg,var(--blue) 0%,var(--blue-soft) 100%);
+    padding:4.5rem 1.25rem 4rem;
+    text-align:center;
+  }
+  .hero-inner{max-width:820px;margin:0 auto;}
+  .hero h1{
+    font-size:clamp(1.9rem,4.4vw,3rem);
+    color:var(--green-dark);
+    font-weight:800;
+  }
+  .hero .slogan{
+    font-weight:700;font-size:clamp(1.05rem,2.3vw,1.4rem);
+    color:var(--green);margin:.4rem 0 .5rem;
+  }
+  .hero .sub{color:var(--muted);font-size:1.02rem;margin:0;}
+
+
+  /* ---------- LAYOUT ---------- */
+  .layout{
+    max-width:1180px;margin:0 auto;
+    display:grid;grid-template-columns:minmax(0,1fr) 300px;
+    gap:2.5rem;padding:3rem 1.25rem 4rem;
+    align-items:start;
+  }
+  main{min-width:0;}
+
+
+  section{scroll-margin-top:90px;margin-bottom:3.25rem;}
+
+
+  .eyebrow{
+    display:inline-block;font-size:.72rem;font-weight:700;
+    letter-spacing:.14em;text-transform:uppercase;
+    color:var(--green);background:var(--blue-soft);
+    padding:.3rem .7rem;border-radius:999px;margin-bottom:.75rem;
+  }
+  h2{
+    font-size:clamp(1.4rem,2.8vw,1.85rem);
+    color:var(--green-dark);
+    padding-bottom:.5rem;border-bottom:3px solid var(--blue);
+  }
+  h3{font-size:1.08rem;color:var(--green);margin-top:1.6rem;}
+
+
+  .card{
+    background:var(--white);border:1px solid var(--line);
+    border-radius:var(--radius);padding:1.4rem 1.5rem;
+    box-shadow:var(--shadow);margin-bottom:1.25rem;
+    transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+  }
+  .card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 28px rgba(20,61,38,.16);
+    border-color:var(--blue);
+  }
+  .card h3{margin-top:0;}
+
+  .research-image{
+    margin:1.25rem 0 1.5rem;
+    overflow:hidden;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--blue-soft);
+    box-shadow:var(--shadow);
+  }
+  .research-image img{
+    display:block;
+    width:100%;
+    aspect-ratio:16 / 9;
+    object-fit:cover;
+  }
+  .research-image figcaption{
+    padding:.65rem .9rem;
+    color:var(--muted);
+    font-size:.82rem;
+    line-height:1.45;
+  }
+
+  /* CSS-only gallery with focusable, click-to-enlarge images */
+  .gallery-grid{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;
+  }
+  .gallery-item{
+    margin:0;overflow:hidden;border:1px solid var(--line);
+    border-radius:var(--radius);background:var(--white);box-shadow:var(--shadow);
+  }
+  .gallery-item a{display:block;overflow:hidden;background:var(--blue-soft);}
+  .gallery-item img{
+    display:block;width:100%;aspect-ratio:4 / 3;object-fit:cover;
+    transition:transform .3s ease;
+  }
+  .gallery-item a:hover img,.gallery-item a:focus-visible img{transform:scale(1.06);}
+  .gallery-item figcaption{
+    padding:.65rem .8rem;color:var(--muted);font-size:.82rem;line-height:1.4;
+  }
+  .gallery-close{display:none;}
+  .gallery-item:target{
+    position:fixed;inset:0;z-index:100;margin:0;padding:2rem;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:rgba(20,61,38,.96);border:0;border-radius:0;box-shadow:none;
+  }
+  .gallery-item:target a{display:flex;align-items:center;justify-content:center;overflow:visible;background:transparent;}
+  .gallery-item:target img{width:auto;max-width:min(90vw,1100px);height:auto;max-height:75vh;aspect-ratio:auto;object-fit:contain;transform:none;border-radius:var(--radius);}
+  .gallery-item:target figcaption{color:var(--white);text-align:center;font-size:.95rem;}
+  .gallery-item:target .gallery-close{display:inline-block;margin-top:.5rem;color:var(--blue);font-weight:700;}
+  @media (max-width:900px){.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  @media (max-width:560px){.gallery-grid{grid-template-columns:1fr;}}
+  @media (prefers-reduced-motion:reduce){.gallery-item img{transition:none;}}
+  @media (max-width:560px){
+    .research-image{margin:1rem 0 1.25rem;}
+    .research-image img{aspect-ratio:4 / 3;}
+  }
+
+  /* Native, keyboard-accessible expandable research cards */
+  .expand-card{
+    background:var(--white);border:1px solid var(--line);
+    border-radius:var(--radius);padding:0;
+    box-shadow:var(--shadow);margin-bottom:1.25rem;
+    overflow:hidden;transition:border-color .2s ease,box-shadow .2s ease;
+  }
+  .expand-card:hover,.expand-card[open]{border-color:var(--blue);}
+  .expand-card summary{
+    display:flex;align-items:center;gap:1rem;
+    padding:1.15rem 1.4rem;cursor:pointer;list-style:none;
+    color:var(--green-dark);font-weight:700;
+  }
+  .expand-card summary::-webkit-details-marker{display:none;}
+  .expand-card summary::after{
+    content:"＋";margin-left:auto;color:var(--green);font-size:1.25rem;
+    transition:transform .2s ease;
+  }
+  .expand-card[open] summary::after{content:"−";}
+  .expand-card summary:focus-visible{outline:3px solid var(--green);outline-offset:-4px;border-radius:var(--radius);}
+  .expand-title{font-size:1.08rem;}
+  .expand-label{
+    flex:none;margin-left:auto;padding:.3rem .75rem;border-radius:999px;
+    background:var(--blue-soft);color:var(--green);font-size:.78rem;
+  }
+  .expand-card summary::after{margin-left:0;}
+  .expand-label::after{content:"Read More";}
+  .expand-card[open] .expand-label::after{content:"Read Less";}
+  .expand-content{
+    display:grid;grid-template-rows:0fr;opacity:0;
+    transition:grid-template-rows .28s ease,opacity .22s ease;
+  }
+  .expand-card[open] .expand-content{grid-template-rows:1fr;opacity:1;}
+  .expand-inner{overflow:hidden;min-height:0;}
+  .expand-inner p{margin:0;padding:0 1.4rem 1.3rem;}
+  @media (prefers-reduced-motion:reduce){
+    .expand-content,.expand-card summary::after{transition:none;}
+  }
+
+  a{transition:color .2s ease;}
+  main a:hover,main a:focus-visible{color:var(--green-dark);}
+  .empty-plate{transition:transform .25s ease,box-shadow .25s ease;}
+  .empty-plate:hover{transform:rotate(-6deg) scale(1.05);box-shadow:0 5px 14px rgba(20,61,38,.16);}
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;}
+  }
+
+
+  .divider{
+    height:1px;background:var(--line);
+    margin:2rem 0;border:0;
+  }
+
+
+  .stat{
+    display:inline-block;background:var(--green);color:var(--white);
+    font-weight:800;font-size:1.5rem;line-height:1;
+    padding:.5rem .85rem;border-radius:10px;margin-right:.6rem;
+  }
+
+
+  ul.clean{list-style:none;padding:0;margin:0;}
+  ul.clean li{
+    position:relative;padding-left:1.5rem;margin-bottom:.65rem;
+  }
+  ul.clean li::before{
+    content:"";position:absolute;left:0;top:.62em;
+    width:8px;height:8px;border-radius:2px;background:var(--blue);
+    border:2px solid var(--green);
+  }
+
+
+  /* ---------- SIDEBAR ---------- */
+  aside{position:sticky;top:96px;}
+  .widget{
+    background:var(--blue-soft);border:1px solid var(--line);
+    border-radius:var(--radius);padding:1.2rem 1.25rem;
+    margin-bottom:1.25rem;
+  }
+  .widget h3{
+    margin:0 0 .8rem;font-size:.82rem;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--green-dark);
+  }
+  .widget ul{list-style:none;margin:0;padding:0;}
+  .widget li{margin-bottom:.6rem;font-size:.9rem;}
+  .widget a{text-decoration:none;color:var(--green);}
+  .widget a:hover{text-decoration:underline;}
+
+
+  .empty-plate{
+    width:96px;height:96px;margin:0 auto .6rem;
+    display:block;border-radius:50%;
+    border:3px solid var(--green);
+    background:radial-gradient(circle at 50% 50%,var(--white) 55%,var(--blue) 100%);
+    position:relative;
+  }
+  .empty-plate::after{
+    content:"";position:absolute;inset:26px;
+    border-radius:50%;border:2px dashed var(--blue);
+  }
+  .announce-text{text-align:center;color:var(--muted);font-size:.88rem;margin:0;}
+
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    background:var(--green-dark);color:var(--blue);
+    padding:3rem 1.25rem 1.5rem;
+  }
+  .foot-grid{
+    max-width:1180px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:2rem;
+  }
+  footer h4{
+    color:var(--white);font-size:.82rem;letter-spacing:.12em;
+    text-transform:uppercase;margin:0 0 .9rem;
+  }
+  footer ul{list-style:none;margin:0;padding:0;font-size:.9rem;}
+  footer li{margin-bottom:.5rem;}
+  footer a{color:var(--blue);text-decoration:none;}
+  footer a:hover{text-decoration:underline;color:var(--white);}
+  .foot-bottom{
+    max-width:1180px;margin:2.5rem auto 0;padding-top:1.25rem;
+    border-top:1px solid rgba(191,227,242,.25);
+    font-size:.8rem;text-align:center;color:rgba(191,227,242,.75);
+  }
+
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;gap:2rem;}
+    aside{position:static;}
+  }
+  @media (max-width:560px){
+    .nav-wrap{justify-content:center;}
+    nav ul{justify-content:center;}
+    .hero{padding:3rem 1rem;}
+  }
+
+  .back-to-top{
+    position:fixed;right:1.25rem;bottom:1.25rem;z-index:60;
+    display:inline-flex;align-items:center;gap:.45rem;
+    padding:.7rem 1rem;border:0;border-radius:999px;
+    background:var(--green);color:var(--white);
+    font:inherit;font-size:.85rem;font-weight:700;
+    box-shadow:var(--shadow);cursor:pointer;
+    opacity:0;visibility:hidden;transform:translateY(10px);
+    transition:opacity .2s ease,visibility .2s ease,transform .2s ease,background .2s ease;
+  }
+  .back-to-top.visible{opacity:1;visibility:visible;transform:translateY(0);}
+  .back-to-top:hover,.back-to-top:focus-visible{background:var(--green-dark);}
+
+  /* Polished accents for a colorful, presentation-friendly finish */
+  body{
+    background-color:#FCFEFD;
+    background-image:radial-gradient(rgba(140,204,227,.18) 1px,transparent 1px),linear-gradient(135deg,rgba(168,199,160,.08),transparent 38%);
+    background-size:24px 24px,100% 100%;
+  }
+  header{background:linear-gradient(105deg,var(--green-dark),var(--green) 68%,#28734A);}
+  nav a{color:#E1F4FA;}
+  nav a:hover,nav a:focus-visible{background:var(--yellow);color:var(--green-dark);}
+  .hero{background:linear-gradient(135deg,#BFE3F2 0%,#E8F4FA 55%,#F9EFC8 100%);}
+  .hero-inner{position:relative;}
+  .hero-inner::before,.hero-inner::after{
+    content:"";position:absolute;width:13px;height:13px;border-radius:4px;transform:rotate(45deg);
+    background:var(--coral);opacity:.75;
+  }
+  .hero-inner::before{top:12%;left:4%;}
+  .hero-inner::after{right:5%;bottom:14%;background:var(--sage);}
+  .layout{position:relative;}
+  section{
+    --section-accent:var(--sky);
+    --section-tint:rgba(140,204,227,.09);
+    padding:1.15rem 1.2rem 1.35rem;
+    margin-left:-1.2rem;margin-right:-1.2rem;
+    border-radius:20px;
+    background:linear-gradient(135deg,var(--section-tint),rgba(255,255,255,.84) 48%);
+  }
+  #introduction{--section-accent:var(--sky);--section-tint:rgba(140,204,227,.12);}
+  #about{--section-accent:var(--sage);--section-tint:rgba(168,199,160,.13);}
+  #findings{--section-accent:var(--yellow);--section-tint:rgba(246,217,121,.14);}
+  #impact{--section-accent:var(--coral);--section-tint:rgba(232,135,115,.10);}
+  #lessons{--section-accent:var(--sage);--section-tint:rgba(168,199,160,.14);}
+  #project{--section-accent:var(--sky);--section-tint:rgba(140,204,227,.10);}
+  #gallery{--section-accent:var(--yellow);--section-tint:rgba(246,217,121,.13);}
+  #references{--section-accent:var(--coral);--section-tint:rgba(232,135,115,.08);}
+  section .eyebrow{
+    color:var(--green-dark);background:linear-gradient(100deg,var(--section-accent),rgba(255,255,255,.78));
+    box-shadow:0 3px 10px rgba(20,61,38,.08);
+  }
+  section .eyebrow::before{content:"◆";font-size:.7em;margin-right:.5rem;color:var(--green-dark);}
+  section h2{border-color:var(--section-accent);}
+  section h3{color:var(--green-dark);}
+  .card,.expand-card,.gallery-item,.research-image{
+    box-shadow:0 8px 24px rgba(20,61,38,.10);
+  }
+  #findings .expand-card{border-left:5px solid var(--yellow);background:linear-gradient(110deg,rgba(246,217,121,.14),var(--white) 35%);}
+  #findings .expand-card:nth-of-type(even){border-left-color:var(--sky);}
+  #impact .card{border-left:5px solid var(--coral);background:linear-gradient(110deg,rgba(232,135,115,.11),var(--white) 38%);}
+  #impact .card:first-of-type{border-left-color:var(--yellow);}
+  #lessons ul.clean li{
+    padding:.8rem 1rem .8rem 2.5rem;margin:.65rem 0;border-radius:12px;
+    background:linear-gradient(100deg,rgba(168,199,160,.19),rgba(255,255,255,.9));
+    box-shadow:0 4px 14px rgba(20,61,38,.06);
+  }
+  #lessons ul.clean li::before{left:1rem;background:var(--coral);border-color:var(--coral);}
+  .stat{background:linear-gradient(135deg,var(--green),#398457);box-shadow:0 4px 12px rgba(20,61,38,.17);}
+  .gallery-item{transition:transform .2s ease,box-shadow .2s ease;}
+  .gallery-item:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(20,61,38,.16);}
+  .gallery-item figcaption{background:linear-gradient(100deg,rgba(191,227,242,.22),rgba(255,255,255,.9));}
+  .widget{background:linear-gradient(145deg,#E8F4FA,#F5F9EA);box-shadow:var(--shadow);}
+  footer{background:linear-gradient(120deg,var(--green-dark),#20583A 72%,#2D6848);}
+  .back-to-top{background:linear-gradient(135deg,var(--green),#398457);}
+  .back-to-top:hover,.back-to-top:focus-visible{background:linear-gradient(135deg,#B95F50,var(--coral));}
+  @media (max-width:560px){
+    section{padding:.9rem .75rem 1rem;margin-left:-.75rem;margin-right:-.75rem;}
+    .hero-inner::before{left:0;}
+    .hero-inner::after{right:0;}
+  }
+  @media (prefers-reduced-motion:reduce){.gallery-item{transition:none;}}
+
+  /* ---------- LEARNING ACTIVITIES ---------- */
+  #activities{--section-accent:var(--sky);--section-tint:rgba(140,204,227,.12);}
+  .activity-intro{color:var(--muted);}
+  .activity-card{
+    padding:1.3rem 1.4rem;margin:1.2rem 0;
+    border:1px solid var(--line);border-radius:var(--radius);
+    background:linear-gradient(135deg,rgba(191,227,242,.24),var(--white) 62%);
+    box-shadow:var(--shadow);
+  }
+  .activity-card h3{margin:0 0 .8rem;}
+  .quiz-question{
+    padding:1rem;margin:.9rem 0;border-radius:12px;
+    background:linear-gradient(110deg,rgba(246,217,121,.18),rgba(255,255,255,.9));
+    border-left:4px solid var(--yellow);
+  }
+  .quiz-question legend{font-weight:700;color:var(--green-dark);padding:0 .25rem;}
+  .quiz-question label{display:block;padding:.25rem .4rem;cursor:pointer;}
+  .quiz-question input{accent-color:var(--green);margin-right:.45rem;}
+  .activity-button{
+    padding:.7rem 1.1rem;border:0;border-radius:999px;
+    color:var(--white);background:linear-gradient(135deg,var(--green),#398457);
+    font:inherit;font-weight:700;cursor:pointer;box-shadow:var(--shadow);
+    transition:transform .2s ease,background .2s ease;
+  }
+  .activity-button:hover,.activity-button:focus-visible{transform:translateY(-2px);background:linear-gradient(135deg,#B95F50,var(--coral));}
+  #quiz-result{margin-top:1rem;padding:1rem;border-radius:12px;background:var(--blue-soft);color:var(--green-dark);font-weight:700;}
+  #quiz-result[hidden]{display:none;}
+  .trivia-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;}
+  .trivia-card{margin:0;border:1px solid var(--line);border-radius:12px;background:var(--white);overflow:hidden;}
+  .trivia-card summary{padding:.9rem 1rem;cursor:pointer;color:var(--green-dark);font-weight:700;background:linear-gradient(100deg,rgba(168,199,160,.25),rgba(191,227,242,.25));}
+  .trivia-card p{padding:0 1rem;margin:0 0 1rem;color:var(--muted);}
+  .scenario{padding:1rem;margin:.9rem 0;border-radius:12px;background:linear-gradient(110deg,rgba(232,135,115,.12),rgba(255,255,255,.94));border-left:4px solid var(--coral);}
+  .scenario p{margin:0 0 .7rem;}
+  .scenario-options input{position:absolute;opacity:0;width:1px;height:1px;}
+  .scenario-options label{display:inline-block;margin:.2rem .3rem .2rem 0;padding:.45rem .75rem;border:1px solid var(--line);border-radius:999px;background:var(--white);cursor:pointer;}
+  .scenario-options input:checked + label{border-color:var(--green);background:var(--blue-soft);box-shadow:0 0 0 2px rgba(31,92,58,.14);}
+  .scenario-options input:focus-visible + label{outline:3px solid var(--green);outline-offset:2px;}
+  .scenario-feedback{display:none;margin:.65rem 0 0;padding:.65rem .8rem;border-radius:9px;font-size:.92rem;}
+  .scenario-options input.good:checked ~ .scenario-feedback.good{display:block;background:#E8F4EA;color:var(--green-dark);}
+  .scenario-options input:not(.good):checked ~ .scenario-feedback:not(.good){display:block;background:#FFF3E8;color:#784335;}
+  @media (max-width:560px){.trivia-grid{grid-template-columns:1fr;}.activity-card{padding:1rem;}}
+  @media (prefers-reduced-motion:reduce){.activity-button{transition:none;}}
+</style>
+</head>
+<body>
+
+
+<!-- ================= HEADER / NAVIGATION ================= -->
+<header>
+  <div class="nav-wrap">
+    <a class="brand" href="#home">
+      <span class="brand-grid" aria-hidden="true">
+        <span class="on"></span><span class="on"></span><span class="on"></span>
+        <span class="on"></span><span class="off"></span><span class="off"></span>
+        <span class="off"></span><span class="off"></span><span class="off"></span>
+      </span>
+      <span class="brand-name">Mapped Scarcity</span>
+    </a>
+    <nav>
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About the Problem</a></li>
+        <li><a href="#findings">Research Findings</a></li>
+        <li><a href="#impact">Impact</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#activities">Activities</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+<!-- ================= HERO ================= -->
+<div class="hero" id="home">
+  <div class="hero-inner">
+    <h1>Mapped Scarcity</h1>
+    <p class="slogan">“Behind every empty net is a story of deprivation”</p>
+    <p class="sub">Resource Deprivation and How It Affects Us</p>
+  </div>
+</div>
+
+
+<!-- ================= LAYOUT ================= -->
+<div class="layout">
+
+
+  <!-- ---------- MAIN CONTENT ---------- -->
+  <main>
+
+
+    <!-- INTRODUCTION -->
+    <section id="introduction">
+      <span class="eyebrow">Introduction</span>
+      <h2>Resource Deprivation in Agriculture and Fishery Arts</h2>
+      <figure class="research-image">
+        <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&amp;fit=crop&amp;w=1400&amp;q=85" alt="Green agricultural fields stretching toward distant hills" fetchpriority="high">
+        <figcaption>Farming and fishing connect communities to the land and water that sustain them.</figcaption>
+      </figure>
+      <p>Resource deprivation is a crisis that strips people of the essentials needed to live, work, and thrive: food, clean water, healthcare, education, housing, and stable income. It does not strike evenly. In the Philippines, overfishing and poor waste management have historically driven food insecurity, malnutrition, poverty, and debt, and today they manifest as the displacement of fisherfolk and worsening floods. Across other countries, structural inequality and rural asset scarcity have marginalized the poor and limited long-term development. And within communities today, high input costs and heavy import tariffs have reduced crop and fish production, deepened dependence on middlemen, and left local ecosystems unable to sustain their populations.</p>
+      <p>This research examines resource deprivation in agriculture and fishery arts across three levels — people in the Philippines, people in other countries, and communities today — tracing each through its root causes, historical impact during the Green and Blue Revolution eras, and present-day consequences. From the collapse of fish populations to the indebtedness of farmers, the evidence shows that deprivation is not an accident but a cycle: one that traps families in poverty, forces migration, and deepens inequality. Yet it also points toward a path forward — one where resources are shared fairly, made affordable, and preserved so that both people and the ecosystems they depend on can endure.</p>
+    </section>
+
+
+    <hr class="divider">
+
+
+    <!-- ABOUT THE PROBLEM -->
+    <section id="about">
+      <span class="eyebrow">About the Problem</span>
+      <h2>A Tug of War Between Populations and Ecosystems</h2>
+      <p>Resource deprivation is a tug of war between populations and ecosystems. When people cannot access the essentials of life — food, clean water, healthcare, education, housing, and employment — they are shut out. Hunger follows, poverty deepens, and the chance to build a better life slips away. Families lose their livelihoods, communities break, and inequality widens between those who have and those who have not.</p>
+      <p>The effects ripple outward. In communities, the loss of clean water, fertile soil, and timber triggers food and water insecurity, strips away livelihoods, and creates competition for what little remains. Poverty is worsened, families are forced to migrate, and social unrest follows. Meanwhile, the local ecosystems that once sustained these populations can no longer carry the weight. When the natural world is exhausted, so too are the people who depend on it — and the cycle of deprivation begins again.</p>
+    </section>
+
+
+    <hr class="divider">
+
+
+    <!-- RESEARCH FINDINGS -->
+    <section id="findings">
+      <span class="eyebrow">Research Findings</span>
+      <h2>What the Evidence Shows</h2>
+      <p>In the Philippines, overfishing and poor waste management drive food insecurity and displacement. Internationally, structural inequality and rural resource scarcity cause marginalization and displacement. And among communities today, high input costs and tariffs reduce production and create dependence on the elite.</p>
+
+
+      <h3>People in the Philippines</h3>
+      <details class="expand-card">
+        <summary><span class="expand-title">Poor Waste Management</span><span class="expand-label" aria-hidden="true"></span></summary>
+        <div class="expand-content"><div class="expand-inner">
+          <p>Causes garbage to accumulate in drainage systems and waterways, worsening floods during heavy rainfall and typhoons.</p>
+          <figure class="research-image">
+            <img src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&amp;fit=crop&amp;w=1400&amp;q=85" alt="Polluted waterway affected by unmanaged waste" loading="lazy">
+            <figcaption>Waste in waterways threatens public health and worsens flooding.</figcaption>
+          </figure>
+        </div></div>
+      </details>
+      <details class="expand-card">
+        <summary><span class="expand-title">Overfishing</span><span class="expand-label" aria-hidden="true"></span></summary>
+        <div class="expand-content"><div class="expand-inner">
+          <p>Leads to the collapse of fish populations and habitat destruction.</p>
+          <figure class="research-image">
+            <img src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&amp;fit=crop&amp;w=1400&amp;q=85" alt="Fishing waters and coastal habitat" loading="lazy">
+            <figcaption>Healthy coastal waters are essential to fish populations and fishing livelihoods.</figcaption>
+          </figure>
+        </div></div>
+      </details>
+
+
+      <h3>People in Other Countries</h3>
+      <details class="expand-card">
+        <summary><span class="expand-title">Resource Deprivation in Other Countries</span><span class="expand-label" aria-hidden="true"></span></summary>
+        <div class="expand-content"><div class="expand-inner">
+          <p>The root causes of resource deprivation are poverty, inequality, lack of resources, and limited access to modern tools and technology. These problems make it difficult for farmers and fishermen to earn enough money and provide food for their families.</p>
+          <figure class="research-image">
+            <img src="https://images.unsplash.com/photo-1464207687429-7505649dae38?auto=format&amp;fit=crop&amp;w=1400&amp;q=85" alt="Rural farmland illustrating the challenges faced by small-scale farmers" loading="lazy">
+            <figcaption>Rural producers often face limited access to land, tools, and other essential resources.</figcaption>
+          </figure>
+        </div></div>
+      </details>
+
+
+      <h3>Impact on Communities Today</h3>
+      <details class="expand-card">
+        <summary><span class="expand-title">Resource Deprivation in Communities Today</span><span class="expand-label" aria-hidden="true"></span></summary>
+        <div class="expand-content"><div class="expand-inner">
+          <p>Resource deprivation in communities today is caused by poverty, unfair access to resources, and the high cost of farming and fishing supplies. Seeds, fertilizers, fuel, and equipment can be too expensive for many farmers and fishermen.</p>
+          <figure class="research-image">
+            <img src="https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&amp;fit=crop&amp;w=1400&amp;q=85" alt="Agricultural work and supplies needed for food production" loading="lazy">
+            <figcaption>Rising prices for supplies and equipment can put pressure on small producers.</figcaption>
+          </figure>
+        </div></div>
+      </details>
+    </section>
+
+
+    <hr class="divider">
+
+
+    <!-- IMPACT -->
+    <section id="impact">
+      <span class="eyebrow">Impact</span>
+      <h2>How Deprivation Shapes Lives</h2>
+      <figure class="research-image">
+        <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&amp;fit=crop&amp;w=1400&amp;q=85" alt="Community members facing the effects of poverty and food insecurity" loading="lazy">
+        <figcaption>Food insecurity affects family health, livelihoods, and the ability to meet basic needs.</figcaption>
+      </figure>
+
+      <h3>People in the Philippines</h3>
+      <div class="card">
+        <p><span class="stat">12.8%</span></p>
+        <p>Food insecurity has been a problem for centuries. Back then it led to loss of livelihoods, malnutrition, displacement, dependence on imports for basic nutrition, and poverty. The Green Revolution is also a big factor that pushed farmers into indebtedness, hunger, and poverty. And up until now, poverty still affects us: according to the Philippine Statistics Authority, <strong>12.8% of Filipinos are multidimensionally poor</strong>.</p>
+      </div>
+
+
+      <h3>People in Other Countries</h3>
+      <div class="card">
+        <p>Resource deprivation is the lack of access to basic needs such as food, water, healthcare, education, housing, and jobs. Its main root causes are poverty, inequality, and lack of resources. In farming and fishing, political problems, environmental damage, and limited resources make it harder for workers to earn a living. Historically, it has increased poverty and limited development, especially in rural and coastal communities.</p>
+      </div>
+
+
+      <h3>Impact on Communities Today</h3>
+      <div class="card">
+        <p>Because of resource deprivation, farmers and fishermen may produce less and earn less. Small producers also struggle to compete with bigger businesses. As a result, families may have trouble affording food and meeting their basic needs.</p>
+      </div>
+
+      <h3>Historical Impacts</h3>
+      <details class="expand-card">
+        <summary><span class="expand-title">The Green and Blue Revolutions</span><span class="expand-label" aria-hidden="true"></span></summary>
+        <div class="expand-content"><div class="expand-inner">
+          <p>The Green and Blue Revolutions were intended to modernize farming and fishing. As described in this research, these changes also marginalized poorer producers, and the Green Revolution pushed some farmers into chemical debt, hunger, and poverty. Their effects help explain how past approaches to production can shape resource access and livelihoods today.</p>
+        </div></div>
+      </details>
+    </section>
+
+
+    <hr class="divider">
+
+
+    <!-- LESSONS LEARNED -->
+    <section id="lessons">
+      <span class="eyebrow">Lessons Learned</span>
+      <h2>Four Takeaways From the Research</h2>
+      <figure class="research-image">
+        <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&amp;fit=crop&amp;w=1400&amp;q=85" alt="Sustainable cultivation in a productive farm landscape" loading="lazy">
+        <figcaption>Sustainable farming and responsible fishing help protect resources for future generations.</figcaption>
+      </figure>
+      <ul class="clean">
+        <li><strong>Deprivation is a cycle, not an accident.</strong> Overfishing and poor waste management don't just deplete resources — they trigger a chain reaction of food insecurity, poverty, debt, and displacement that repeats across generations.</li>
+        <li><strong>Historical policies shape today's problems.</strong> The Green and Blue Revolutions were meant to modernize farming and fishing, but they pushed farmers into chemical debt and marginalized the poor.</li>
+        <li><strong>The solution is resource equity.</strong> Sharing resources fairly based on community needs — not equal distribution — is what actually improves lives.</li>
+        <li><strong>The problem is solvable, but it needs awareness first.</strong> The first step is understanding the cycle.</li>
+      </ul>
+    </section>
+
+
+    <hr class="divider">
+
+
+    <!-- PROJECT DETAILS -->
+    <section id="project">
+      <span class="eyebrow">Project Details</span>
+      <h2>How the Research Was Divided</h2>
+      <p>This group research project examined one of the main problems of AFA — Resource Deprivation — across three levels.</p>
+      <div class="card">
+        <ul class="clean">
+          <li><strong>The Philippines section</strong> covered waste management and overfishing — Cassandra and Megumi</li>
+          <li><strong>The other-countries section</strong> explored structural inequality — Mateo and Raijin</li>
+          <li><strong>The communities-today section</strong> focused on input costs and market pressures — Francis and Royce</li>
+        </ul>
+        <p style="margin-bottom:0;">Each followed the same framework: problem, root causes, historical impact, present-day impact, evidence, and insights.</p>
+      </div>
+    </section>
+
+
+    <hr class="divider">
+
+
+    <!-- IMAGE GALLERY -->
+    <section id="gallery">
+      <span class="eyebrow">Image Gallery</span>
+      <h2>Resources, Communities, and Change</h2>
+      <p>A visual look at the environmental pressures and livelihoods connected to resource access.</p>
+      <div class="gallery-grid">
+        <figure class="gallery-item" id="gallery-water">
+          <a href="#gallery-water" aria-label="Enlarge water scarcity image"><img src="https://images.unsplash.com/photo-1437482078695-73f5ca6c96e2?auto=format&amp;fit=crop&amp;w=900&amp;q=85" alt="Water resources in a landscape" loading="lazy"></a>
+          <figcaption>Access to safe, reliable water supports communities and food production.<a class="gallery-close" href="#gallery">Close image</a></figcaption>
+        </figure>
+        <figure class="gallery-item" id="gallery-forest">
+          <a href="#gallery-forest" aria-label="Enlarge forest image"><img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&amp;fit=crop&amp;w=900&amp;q=85" alt="Dense green forest and trees" loading="lazy"></a>
+          <figcaption>Forests provide vital habitats and resources for people.<a class="gallery-close" href="#gallery">Close image</a></figcaption>
+        </figure>
+        <figure class="gallery-item" id="gallery-fishing">
+          <a href="#gallery-fishing" aria-label="Enlarge fishing waters image"><img src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&amp;fit=crop&amp;w=900&amp;q=85" alt="Coastal water and waves" loading="lazy"></a>
+          <figcaption>Healthy marine ecosystems help sustain fishing communities.<a class="gallery-close" href="#gallery">Close image</a></figcaption>
+        </figure>
+        <figure class="gallery-item" id="gallery-pollution">
+          <a href="#gallery-pollution" aria-label="Enlarge water pollution image"><img src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&amp;fit=crop&amp;w=900&amp;q=85" alt="Waterway affected by pollution and waste" loading="lazy"></a>
+          <figcaption>Pollution in waterways threatens ecosystems and public health.<a class="gallery-close" href="#gallery">Close image</a></figcaption>
+        </figure>
+        <figure class="gallery-item" id="gallery-farmers">
+          <a href="#gallery-farmers" aria-label="Enlarge rural farming image"><img src="https://images.unsplash.com/photo-1464207687429-7505649dae38?auto=format&amp;fit=crop&amp;w=900&amp;q=85" alt="Rural farmland and agricultural landscape" loading="lazy"></a>
+          <figcaption>Rural producers can face barriers to land, tools, and resources.<a class="gallery-close" href="#gallery">Close image</a></figcaption>
+        </figure>
+        <figure class="gallery-item" id="gallery-supplies">
+          <a href="#gallery-supplies" aria-label="Enlarge farming supplies image"><img src="https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&amp;fit=crop&amp;w=900&amp;q=85" alt="Agricultural work and supplies for food production" loading="lazy"></a>
+          <figcaption>Costs for supplies and equipment can pressure small producers.<a class="gallery-close" href="#gallery">Close image</a></figcaption>
+        </figure>
+        <figure class="gallery-item" id="gallery-food">
+          <a href="#gallery-food" aria-label="Enlarge community impact image"><img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&amp;fit=crop&amp;w=900&amp;q=85" alt="Community members affected by poverty and food insecurity" loading="lazy"></a>
+          <figcaption>Food insecurity affects health, livelihoods, and family wellbeing.<a class="gallery-close" href="#gallery">Close image</a></figcaption>
+        </figure>
+        <figure class="gallery-item" id="gallery-sustainable">
+          <a href="#gallery-sustainable" aria-label="Enlarge sustainable farming image"><img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&amp;fit=crop&amp;w=900&amp;q=85" alt="Cultivated farm landscape" loading="lazy"></a>
+          <figcaption>Sustainable practices help protect resources for future generations.<a class="gallery-close" href="#gallery">Close image</a></figcaption>
+        </figure>
+      </div>
+    </section>
+
+
+    <!-- LEARNING ACTIVITIES -->
+    <section id="activities">
+      <span class="eyebrow">Learning Activities</span>
+      <h2>Explore, Think, and Take Action</h2>
+      <p class="activity-intro">Test what you have learned, uncover useful facts, and choose practical responses to resource challenges.</p>
+
+      <div class="activity-card">
+        <h3>Quick Knowledge Quiz</h3>
+        <p>Choose one answer for each question, then check your score. The three True or False questions are included in your total.</p>
+        <form id="knowledge-quiz">
+          <fieldset class="quiz-question">
+            <legend>1. What does resource deprivation mean?</legend>
+            <label><input type="radio" name="q1" value="a" required> Having too many resources to manage</label>
+            <label><input type="radio" name="q1" value="b"> Not having fair access to essentials such as food, water, or tools</label>
+            <label><input type="radio" name="q1" value="c"> Choosing to use fewer resources for fun</label>
+          </fieldset>
+          <fieldset class="quiz-question">
+            <legend>2. What can overfishing cause?</legend>
+            <label><input type="radio" name="q2" value="a" required> Fish populations to decline and habitats to be damaged</label>
+            <label><input type="radio" name="q2" value="b"> More clean water for farms</label>
+            <label><input type="radio" name="q2" value="c"> Lower costs for all fishing equipment</label>
+          </fieldset>
+          <fieldset class="quiz-question">
+            <legend>3. How can poorly managed waste affect communities?</legend>
+            <label><input type="radio" name="q3" value="a" required> It always improves soil quality</label>
+            <label><input type="radio" name="q3" value="b"> It can block waterways, worsen flooding, and harm health</label>
+            <label><input type="radio" name="q3" value="c"> It increases fish habitats</label>
+          </fieldset>
+          <fieldset class="quiz-question">
+            <legend>4. Why can high prices for seeds, fuel, and equipment be a problem?</legend>
+            <label><input type="radio" name="q4" value="a" required> Small farmers and fishers may struggle to produce and earn</label>
+            <label><input type="radio" name="q4" value="b"> They make all food free</label>
+            <label><input type="radio" name="q4" value="c"> They prevent weather changes</label>
+          </fieldset>
+          <fieldset class="quiz-question">
+            <legend>5. What is one way to help protect resources for the future?</legend>
+            <label><input type="radio" name="q5" value="a" required> Use resources without limits</label>
+            <label><input type="radio" name="q5" value="b"> Support fair access and sustainable farming and fishing</label>
+            <label><input type="radio" name="q5" value="c"> Keep useful tools away from local producers</label>
+          </fieldset>
+
+          <h3>True or False</h3>
+          <fieldset class="quiz-question">
+            <legend>6. Resource deprivation can affect health, education, and livelihoods.</legend>
+            <label><input type="radio" name="q6" value="true" required> True</label>
+            <label><input type="radio" name="q6" value="false"> False</label>
+          </fieldset>
+          <fieldset class="quiz-question">
+            <legend>7. Only people in one country can experience resource deprivation.</legend>
+            <label><input type="radio" name="q7" value="true" required> True</label>
+            <label><input type="radio" name="q7" value="false"> False</label>
+          </fieldset>
+          <fieldset class="quiz-question">
+            <legend>8. Healthy ecosystems help support the people who depend on them.</legend>
+            <label><input type="radio" name="q8" value="true" required> True</label>
+            <label><input type="radio" name="q8" value="false"> False</label>
+          </fieldset>
+          <button class="activity-button" type="submit">Check My Score</button>
+          <p id="quiz-result" role="status" aria-live="polite" hidden></p>
+        </form>
+      </div>
+
+      <div class="activity-card">
+        <h3>Did You Know?</h3>
+        <p>Open each card to reveal a quick fact.</p>
+        <div class="trivia-grid">
+          <details class="trivia-card"><summary>Water scarcity</summary><p>Water scarcity can result from both limited supplies and difficulty accessing safe, reliable water. Protecting watersheds and reducing pollution can help communities.</p></details>
+          <details class="trivia-card"><summary>Deforestation</summary><p>Forests help protect soil, store water, and provide habitats. When forests are cleared, erosion and loss of wildlife habitat can increase.</p></details>
+          <details class="trivia-card"><summary>Overfishing</summary><p>When fish are caught faster than populations can recover, fish stocks can decline and fishing communities may lose an important source of food and income.</p></details>
+          <details class="trivia-card"><summary>Pollution</summary><p>Waste entering rivers and coastal waters can harm wildlife, affect public health, and damage resources that communities rely on.</p></details>
+        </div>
+      </div>
+
+      <div class="activity-card">
+        <h3>What Would You Do?</h3>
+        <p>Choose the response you think would help most. The feedback explains one practical option.</p>
+        <div class="scenario">
+          <p><strong>Scenario 1:</strong> A small fishing community notices fewer fish each season. What is a helpful first step?</p>
+          <div class="scenario-options">
+            <input type="radio" name="scenario1" id="scenario1-best" class="good">
+            <input type="radio" name="scenario1" id="scenario1-other">
+            <label for="scenario1-best">Work with the community on responsible catch limits and habitat protection</label>
+            <label for="scenario1-other">Catch as many fish as possible before they disappear</label>
+            <p class="scenario-feedback good">Good choice. Community-led rules and habitat care can help fish populations recover while supporting livelihoods.</p>
+            <p class="scenario-feedback">That could make the decline worse. Long-term solutions protect fish stocks and the people who depend on them.</p>
+          </div>
+        </div>
+        <div class="scenario">
+          <p><strong>Scenario 2:</strong> A farmer cannot afford seed and fertilizer for the next planting season. What could help?</p>
+          <div class="scenario-options">
+            <input type="radio" name="scenario2" id="scenario2-best" class="good">
+            <input type="radio" name="scenario2" id="scenario2-other">
+            <label for="scenario2-best">Connect with local support, shared resources, or lower-cost sustainable methods</label>
+            <label for="scenario2-other">Ignore the problem and stop asking for help</label>
+            <p class="scenario-feedback good">Good choice. Sharing resources and connecting producers with support can reduce barriers and build resilience.</p>
+            <p class="scenario-feedback">Asking for support can open up options. Community programs and shared resources may help reduce costs.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REFERENCES -->
+    <section id="references">
+      <span class="eyebrow">References</span>
+      <h2>Sources</h2>
+      <ul class="clean">
+        <li><a href="https://climate.gov.ph/news/923" target="_blank" rel="noopener">climate.gov.ph — News</a></li>
+        <li><a href="https://ph.oceana.org/press-releases/new-report-philippine-fisheries-in-freefall-45-million-kilos-of-fish-lost-annually/" target="_blank" rel="noopener">Oceana Philippines — Philippine Fisheries in Freefall</a></li>
+        <li><a href="https://www.ibon.org/tl/what-happened-to-our-rice-irri/" target="_blank" rel="noopener">IBON Foundation — What Happened to Our Rice, IRRI?</a></li>
+        <li><a href="https://www.ibon.org/tl/increasing-food-import-dependence/" target="_blank" rel="noopener">IBON Foundation — Increasing Food Import Dependence</a></li>
+        <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5901871/" target="_blank" rel="noopener">PMC — Article PMC5901871</a></li>
+        <li><a href="https://cids.up.edu.ph/fishing-davao-city-coastal-road-narratives-displacement/" target="_blank" rel="noopener">UP CIDS — Fishing Davao City Coastal Road: Narratives of Displacement</a></li>
+        <li><a href="https://www.facebook.com/Bulatlat.Online/posts/1568453761953722/" target="_blank" rel="noopener">Bulatlat — Loss of Fishing Grounds Due to Reclamation</a></li>
+        <li><a href="https://www.sciencedirect.com/science/article/abs/pii/S030142072300692X" target="_blank" rel="noopener">ScienceDirect — Land Use Policy Article</a></li>
+        <li><a href="https://www.cmi.no/publications/9706-smallholders-and-food-security-in-poor-countries" target="_blank" rel="noopener">CMI — Smallholders and Food Security in Poor Countries</a></li>
+        <li><a href="https://www.worldvision.org/sponsorship-news-stories/global-poverty-facts" target="_blank" rel="noopener">World Vision — Global Poverty Facts</a></li>
+        <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11722465/" target="_blank" rel="noopener">PMC — Article PMC11722465</a></li>
+        <li><a href="https://www.researchgate.net/publication/303422776_Confronting_the_Blue_Revolution_Industrial_Aquaculture_and_Sustainability_in_the_Global_South" target="_blank" rel="noopener">ResearchGate — Confronting the Blue Revolution</a></li>
+        <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11238993/" target="_blank" rel="noopener">PMC — Article PMC11238993</a></li>
+        <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8121286/" target="_blank" rel="noopener">PMC — Article PMC8121286</a></li>
+        <li><a href="https://www.fb.org/intel/markets/farm-bureau-survey-reveals-real-impact-of-fertilizer-availability-and-price" target="_blank" rel="noopener">American Farm Bureau — Fertilizer Availability and Price Survey</a></li>
+      </ul>
+    </section>
+
+
+  </main>
+
+
+  <!-- ---------- SIDEBAR ---------- -->
+  <aside>
+
+
+    <div class="widget">
+      <h3>Announcements</h3>
+      <div class="empty-plate" role="img" aria-label="Empty plate"></div>
+      <p class="announce-text">No announcements yet.</p>
+    </div>
+
+
+    <div class="widget">
+      <h3>Quick Links - Helpful Resources</h3>
+      <ul>
+        <li><a href="https://www.ibon.org/tl/what-happened-to-our-rice-irri/" target="_blank" rel="noopener">What Happened to Our Rice, IRRI? — IBON Foundation</a></li>
+        <li><a href="https://www.fb.org/intel/markets/farm-bureau-survey-reveals-real-impact-of-fertilizer-availability-and-price" target="_blank" rel="noopener">Farm Bureau Survey: Fertilizer Availability and Price</a></li>
+      </ul>
+    </div>
+
+
+
+
+  </aside>
+</div>
+
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="foot-grid">
+
+
+    <div>
+      <h4>Group Information</h4>
+      <ul>
+        <li> Group 3 </li>
+        <li>Cassandra Dela Rosa &amp; Megumi Zafra
+        <li>Mateo Macariola &amp; Raijin Sales
+        <li>Julius Vicente &amp; Stephon Santos
+        <li>Project: Resource Deprivation in AFA</li>
+      </ul>
+    </div>
+
+
+    <div>
+      <h4>Contact Details</h4>
+      <ul>
+        <li><a href="https://www.facebook.com/profile.php?id=61592471144754" target="_blank" rel="noopener">8-1 Passionate</a></li>
+      </ul>
+    </div>
+
+
+    <div>
+      <h4>Social Media</h4>
+      <ul>
+        <li><a href="https://www.facebook.com/profile.php?id=61592471144754" target="_blank" rel="noopener">Facebook - 8-1 Passionate</a></li>
+        <li><a href="https://www.tiktok.com/@8_1apec?_r=1&_t=ZS-9AUrAhi0n3t" target="_blank" rel="noopener">TikTok - 8-1 Passionate</a></li>
+      </ul>
+    </div>
+
+
+  </div>
+
+
+  <div class="foot-bottom">
+    &copy; 2026 Mapped Scarcity — Group Research Project. All rights reserved.
+  </div>
+</footer>
+
+<button class="back-to-top" id="backToTop" type="button" aria-label="Back to top">
+  <span aria-hidden="true">↑</span> Back to top
+</button>
+<script>
+  const backToTop = document.getElementById('backToTop');
+  window.addEventListener('scroll', () => {
+    backToTop.classList.toggle('visible', window.scrollY > 300);
+  }, { passive: true });
+  backToTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  const quiz = document.getElementById('knowledge-quiz');
+  quiz.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const answers = {
+      q1: 'b', q2: 'a', q3: 'b', q4: 'a', q5: 'b',
+      q6: 'true', q7: 'false', q8: 'true'
+    };
+    const formData = new FormData(quiz);
+    const score = Object.entries(answers).reduce((total, [question, answer]) => {
+      return total + (formData.get(question) === answer ? 1 : 0);
+    }, 0);
+    const result = document.getElementById('quiz-result');
+    let message = 'Keep exploring—every new thing you learn can help make a difference.';
+    if (score >= 7) {
+      message = 'Excellent work! You understand how resource access and healthy ecosystems are connected.';
+    } else if (score >= 4) {
+      message = 'Nice effort! Review the sections and activities to build on what you know.';
+    }
+    result.textContent = `Your score: ${score} out of 8. ${message}`;
+    result.hidden = false;
+  });
+</script>
+
+</body>
+</html>
+
+
+
+
+
